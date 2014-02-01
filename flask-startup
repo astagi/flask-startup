@@ -1,0 +1,73 @@
+#!/bin/bash
+
+mkdir -p $1
+cd $1
+
+virtualenv venv
+git init
+mkdir app
+mkdir app/static
+mkdir app/static/js
+mkdir app/static/css
+mkdir app/static/fonts
+mkdir app/templates
+mkdir tmp
+source venv/bin/activate
+pip install flask
+pip install requests
+
+touch .gitignore
+echo "venv
+*.pyc
+.DS_Store" > .gitignore
+
+touch run.py
+chmod a+x run.py
+echo "#!flask/bin/python
+from app import app
+app.run(debug = True, host='0.0.0.0')" > run.py
+
+touch app/views.py
+echo "from flask import render_template
+from app import app
+
+@app.route('/')
+@app.route('/index')
+def index():
+    return render_template('index.html', 
+        name='flask-startup')" > app/views.py
+
+touch app/__init__.py
+echo "from flask import Flask
+
+app = Flask(__name__)
+from app import views" > app/__init__.py
+
+touch app/templates/index.html
+echo '<!DOCTYPE html>
+<html ng-app>
+  <head>
+    <link href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <script src="/static/bower_components/jquery/jquery.min.js"></script>
+    <script src="/static/bower_components/angular/angular.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body>
+    <h1>Hello World from {{name}}!</h1>
+    <div>
+    <h2>Is {{name}} a bad name? Type a new one!</h2>
+    {% raw %}
+    <input type="text" ng-model="another" placeholder="Enter a name here">
+      <h1>Hello World from {{another}}!</h1>
+    </div>
+    {% endraw %}
+  </body>
+</html>' > app/templates/index.html
+
+#Installing Bower components
+cd app/static
+bower install bootstrap
+bower install angular
+bower install jquery
+
+cd ..
